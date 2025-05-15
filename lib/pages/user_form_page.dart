@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../widgets/user_form.dart';
+import '../utils/file_saver.dart';
+import '../utils/local_storage.dart';
 
 class UserFormPage extends StatefulWidget {
   @override
@@ -27,7 +28,7 @@ class _UserFormPageState extends State<UserFormPage> {
   }
 
   void _loadUsersFromLocalStorage() {
-    final data = html.window.localStorage['users'];
+    final data = loadFromLocalStorage('users');
     if (data != null) {
       final decoded = jsonDecode(data) as List<dynamic>;
       setState(() {
@@ -43,7 +44,7 @@ class _UserFormPageState extends State<UserFormPage> {
 
   void _saveUsersToLocalStorage() {
     final data = jsonEncode(_users.map((u) => u.toJson()).toList());
-    html.window.localStorage['users'] = data;
+    saveToLocalStorage('users', data);
   }
 
   void _addUser() {
@@ -87,16 +88,7 @@ class _UserFormPageState extends State<UserFormPage> {
     final filename = _currentFormat == 'json' ? 'usuarios.json' : 'usuarios.xml';
     final mime = _currentFormat == 'json' ? 'application/json' : 'application/xml';
 
-    _downloadFile(filename, _output, mime);
-  }
-
-  void _downloadFile(String filename, String content, String type) {
-    final blob = html.Blob([content], type);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.AnchorElement(href: url)
-      ..setAttribute("download", filename)
-      ..click();
-    html.Url.revokeObjectUrl(url);
+    saveFile(filename, _output, mime);
   }
 
   @override
